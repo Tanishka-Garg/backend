@@ -1,5 +1,7 @@
 # listify-backend
 has 2 models notes and user.
+
+
 notes lets you : 
 ->create a new note,
 ->get all the notes created,
