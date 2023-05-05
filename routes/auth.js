@@ -17,15 +17,16 @@ router.post(
   ],
   async (req, res) => {
     //check error return bad request if any
+    let success = false;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success, errors: errors.array() });
     }
     //check if same email is unique or not
     try {
       let user = await User.findOne({ email: req.body.email });
       if (user) {
-        return res.status(400).json({ error: "email already exists" });
+        return res.status(400).json({ success, error: "email already exists" });
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -44,7 +45,8 @@ router.post(
       };
       const auth_token = jwt.sign(data, JWT_secret);
 
-      res.json({ auth_token });
+      success = true;
+      res.json({ success, auth_token });
     } catch (error) {
       console.error(error.message);
       res.status(500).send("some error occurred");
@@ -68,14 +70,19 @@ router.post(
 
     const { email, password } = req.body;
     //check if user  email exists or not
+    let success = false;
     try {
       let user = await User.findOne({ email });
       if (!user) {
-        return res.status(400).json({ error: "enter valid credentials" });
+        return res
+          .status(400)
+          .json({ success, error: "enter valid credentials" });
       }
       const comparePassword = await bcrypt.compare(password, user.password);
       if (!comparePassword) {
-        return res.status(400).json({ error: "enter valid credentials" });
+        return res
+          .status(400)
+          .json({ success, error: "enter valid credentials" });
       }
 
       const data = {
@@ -84,8 +91,8 @@ router.post(
         },
       };
       const auth_token = jwt.sign(data, JWT_secret);
-
-      res.json({ auth_token });
+      success = true;
+      res.json({ success, auth_token });
     } catch (error) {
       console.error(error.message);
       res.status(500).send("some error occurred");
